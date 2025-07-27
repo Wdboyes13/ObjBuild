@@ -1,5 +1,3 @@
-REMOVE THIS: Expects your build "script" to be BUILD.cpp  
-REMOVE THIS: Also expects you to have copied MkBuild.bat + MkBuild.sh  
 ## How to build
 - __Requirements on ALL OSes__   
 CC and CXX variables set to compiler path / command  

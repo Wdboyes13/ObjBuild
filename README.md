@@ -1,8 +1,16 @@
 # A minimal build system in C++ for C/C++  
+__Example, with comments Can be found in [BUILD.cpp](/BUILD.cpp)__  
 
 ## How to use  
-Example, with comments Can be found in [BUILD.cpp](/BUILD.cpp)  
-For a little thing to put in your README.md to instruct users on how to build, go to [AddMe/AddToREADME.md](/AddMe/AddToREADME.md)  
+
+For everything you need  
+(For these to work your build script MUST be BUILD.cpp)  
+Copy  
+- [AddMe/MkBuild.sh](AddMe/MkBuild.sh)  
+- [AddMe/MkBuild.bat](AddMe/MkBuild.bat)  
+- [AddMe/ObjBuild.hpp](/AddMe/ObjBuild.hpp)  
+All into the same directory as your BUILD.cpp  
+Then copy everything in AddToREADME.md into your README.md  
 
 ## Note 
 This system is NOT recommended for larger projects  
