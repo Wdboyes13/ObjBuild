@@ -21,10 +21,10 @@ B_AddStaticLib("MyLib2", {"File1a.c", "File2a.c", "File3a.c"});
                                                             // Adds a static library to build "libMyLib2.a"
                                                             // Using files File1a.c File2a.c File3a.c
 
-if (!B_IsMSVC){ // True if compiler is MSVC 
-    B_AddCompileOpt({"-O2", "-fopenmp"}); // Adds flags to the Compiler  
+if (B_IsMSVC){ // True if compiler is MSVC 
+    B_AddCompileOpt({"/O2", "/openmp"}); // MSVC Specific flags 
 } else {
-    B_AddCompileOpt({"/O2", "/openmp"}); // MSVC Specific flags
+    B_AddCompileOpt({"-O2", "-fopenmp"}); // Adds flags to the Compiler 
 }
 
 

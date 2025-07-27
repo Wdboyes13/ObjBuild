@@ -326,13 +326,14 @@ void DoBuild() { // Finishes Build
 
         // Append -o flags and add in Object filenames
         LinkCmd.append(Join(Objs, " "));
-        LinkCmd.append(" -o " + CurrentTarget.name);
+        LinkCmd.append(" -o " + CurrentTarget.name + " ");
+        InsertCMD(LinkCmd);
         if (Windows) LinkCmd.append(".exe "); // If we're on windows, make it a .exe
         // Insert Linker Commands
-        LinkCmd.append(" /link ");
+        if (IsMSVC) LinkCmd.append(" /link ");
         LinkCmd.append(Join(linkopts, " "));
         // Execute cleaned final linking command
-        std::cout << LinkCmd << std::endl;
+        std::cout << "LINK EXECUTABLE: " << CurrentTarget.name << std::endl;
         system(StripBadChars(LinkCmd).c_str());
     }
     for (int idx = 0; idx < libsotb.size(); idx++){
@@ -384,7 +385,7 @@ void DoBuild() { // Finishes Build
         // Insert Linker Commands
         if (IsMSVC) LinkCmd.append(" /link /IMPLIB:" + CurrentTarget.name + ".lib ");
         LinkCmd.append(Join(linkopts, " "));
-        std::cout << LinkCmd << std::endl;
+        std::cout << "LINK DYNAMIC LIB: " << CurrentTarget.name << std::endl;
         system(StripBadChars(LinkCmd).c_str());
     }
     for (int idx = 0; idx < libatb.size(); idx++){
@@ -408,7 +409,7 @@ void DoBuild() { // Finishes Build
         LinkCmd.append(Join(Objs, " "));
 
         // Execute cleaned link command
-        std::cout << LinkCmd << std::endl;
+        std::cout << "LINK STATIC LIB: " << CurrentTarget.name << std::endl;
         system(StripBadChars(LinkCmd).c_str());
     }
 }};
