@@ -12,6 +12,12 @@ Full License can be found at THE END of this file
 #include <sstream> // std::istringstream
 #include <cstdlib> // exit, getenv, size_t, system
 #include <cctype> // isprint
+#include <filesystem> // std::filesystem::create_directory
+#ifdef _WIN32 
+#include <windows.h>
+#else 
+#include <unistd.h>
+#endif
 
 // PUB API START
 
@@ -134,6 +140,11 @@ private:
             // Vars for compiling
             auto CCompCmd = CompCmd;
             auto Filename = CurrentTarget.files.at(cidx);
+            if (Windows){
+                Filename.insert(0, "..\\");
+            } else {
+                Filename.insert(0, "../");
+            }
             int ExtPos;
             InsertCMD(CCompCmd);
             // Get the index into string of the start of the file extension
@@ -154,11 +165,11 @@ private:
             
             // Add filename, output name, and append output name to Objs to link
             if (!IsMSVC){
-                CCompCmd.append(" -c " + Filename + " -o " + oname);
+                CCompCmd.append(" -c " + Filename + " -o ../" + oname);
             } else if (IsMSVC && IsCXX){
-                CCompCmd.append(" /EHsc /c " + Filename + " /Fo:" + oname);
+                CCompCmd.append(" /EHsc /c " + Filename + " /Fo:..\\" + oname);
             } else {
-                CCompCmd.append(" /c " + Filename + " /Fo:" + oname);
+                CCompCmd.append(" /c " + Filename + " /Fo:..\\" + oname);
             }
             Objs.push_back(oname);
             // Execute cleaned compile command
@@ -268,6 +279,8 @@ bool IsMSVC = false;
 }
  void AddLibPath(std::string libpath){ // Adds a library path
     CheckBeforeAdd();
+    if (!Windows && libpath.at(0) != '/') libpath.insert(0, "../");
+    if (Windows && libpath.at(1) != ':' && libpath.at(2) != '\\') libpath.insert(0, "..\\");
     if (!IsMSVC){
         linkopts.push_back("-L" + libpath);
     } else {
@@ -276,6 +289,8 @@ bool IsMSVC = false;
 }
  void AddIncludePath(std::string incpath){ // Adds an include path include
     CheckBeforeAdd();
+    if (!Windows && incpath.at(0) != '/') incpath.insert(0, "../");
+    if (Windows && incpath.at(1) != ':' && incpath.at(2) != '\\') incpath.insert(0, "..\\");
     if (!IsMSVC){
         compileopts.push_back("-I" + incpath);
     } else {
@@ -307,9 +322,26 @@ void AddLinkOpt(std::string linkopt){ // Adds Link Options
     }
 }
 
-
 void DoBuild() { // Finishes Build
     IsDone = true; // Set that everything is done
+    std::string ObjPath;
+    if (Windows) {
+        ObjPath = "Obuild\\";
+    } else {
+        ObjPath = "Obuild/";
+    }
+    std::filesystem::create_directory(ObjPath);
+    #ifdef _WIN32 
+    if (!SetCurrentDirectory(ObjPath)){
+        std::cerr << "Failed to switch to " << ObjPath << std::endl;
+        exit(1);
+    }
+    #else 
+    if (chdir(ObjPath.c_str()) != 0){
+        std::cerr << "Failed to switch to " << ObjPath << std::endl;
+        exit(1);
+    }
+    #endif
     for (int idx = 0; idx < exectb.size(); idx++){ // Loop for executable building
 
         // Vars for executable building
