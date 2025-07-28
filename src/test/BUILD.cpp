@@ -6,10 +6,10 @@ B_AddLibPath("lib"); // Adds library search path `lib`
 B_AddDepLib("curl"); // Adds a dependent library `libcurl`
 B_AddIncludePath("include"); // Adds an include search path `include`
 
-B_AddExecutable("MyExec", {"File1.c", "File2.c", "File3.c"}); // Adds an executable to build
+B_AddExecutable("MyExec", {"src/File1.c", "src/File2.c", "src/File3.c"}); // Adds an executable to build
                                                                             // Using files File1.c File2.c File3.c
 
-B_AddDynamicLib("MyLib", {"File1d.c", "File2d.c", "File3d.c"}); // ----------|
+B_AddDynamicLib("MyLib", {"src/File1d.c", "src/File2d.c", "src/File3d.c"}); // ----------|
                                                             // Adds a dynamic library to build     <-|
                                                             // On macOS makes "libMyLib.dylib"
                                                     // On Windows makes "MyLib.dll" + "libMyLib.dll.a" (Import Library)
@@ -17,7 +17,7 @@ B_AddDynamicLib("MyLib", {"File1d.c", "File2d.c", "File3d.c"}); // ----------|
                                                             //
                                                             // Using files File1d.c File2d.c File3d.c
 
-B_AddStaticLib("MyLib2", {"File1a.c", "File2a.c", "File3a.c"}); 
+B_AddStaticLib("MyLib2", {"src/File1a.c", "src/File2a.c", "src/File3a.c"}); 
                                                             // Adds a static library to build "libMyLib2.a"
                                                             // Using files File1a.c File2a.c File3a.c
 

@@ -12,11 +12,11 @@ Full License can be found at THE END of this file
 #include <sstream> // std::istringstream
 #include <cstdlib> // exit, getenv, size_t, system
 #include <cctype> // isprint
-#include <filesystem> // std::filesystem::create_directory
+#include <filesystem> // std::filesystem::create_directory, std::filesystem::create_directories, std::filesystem::path
 #ifdef _WIN32 
-#include <windows.h>
+#include <windows.h> // SetCurrentDirectory
 #else 
-#include <unistd.h>
+#include <unistd.h> // chdir
 #endif
 
 // PUB API START
@@ -140,36 +140,32 @@ private:
             // Vars for compiling
             auto CCompCmd = CompCmd;
             auto Filename = CurrentTarget.files.at(cidx);
+            int ExtPos;
+            InsertCMD(CCompCmd);
+
+            // Make compile output name
+            std::filesystem::path oname = Filename;
+            if (!IsMSVC){
+                oname.replace_extension(".o");
+            } else {
+                oname.replace_extension(".obj");
+            }
+
             if (Windows){
                 Filename.insert(0, "..\\");
             } else {
                 Filename.insert(0, "../");
             }
-            int ExtPos;
-            InsertCMD(CCompCmd);
-            // Get the index into string of the start of the file extension
-            if (EndsWith(Filename, ".cpp")) ExtPos = Filename.find(".cpp");
-            else if (EndsWith(Filename, ".cxx")) ExtPos = Filename.find(".cxx");
-            else if (EndsWith(Filename, ".cc")) ExtPos = Filename.find(".cc");
-            else if (EndsWith(Filename, ".c")) ExtPos = Filename.find(".c");
-            else { std::cerr << "Failed To Find File Extension Offset" << std::endl; exit(5); }
 
-            // Make compile output name
-            std::string oname = Filename;
-            oname.erase(ExtPos);
-            if (!IsMSVC){
-                oname.append(".o");
-            } else {
-                oname.append(".obj");
-            }
-            
+            std::filesystem::create_directories(oname.parent_path());
+
             // Add filename, output name, and append output name to Objs to link
             if (!IsMSVC){
-                CCompCmd.append(" -c " + Filename + " -o ../" + oname);
+                CCompCmd.append(" -c " + Filename + " -o " + oname.c_str() + " ");
             } else if (IsMSVC && IsCXX){
-                CCompCmd.append(" /EHsc /c " + Filename + " /Fo:..\\" + oname);
+                CCompCmd.append(" /EHsc /c " + Filename + " /Fo:" + oname.c_str() + " ");
             } else {
-                CCompCmd.append(" /c " + Filename + " /Fo:..\\" + oname);
+                CCompCmd.append(" /c " + Filename + " /Fo:" + oname.c_str() + " ");
             }
             Objs.push_back(oname);
             // Execute cleaned compile command
@@ -342,6 +338,7 @@ void DoBuild() { // Finishes Build
         exit(1);
     }
     #endif
+    std::filesystem::create_directory("out");
     for (int idx = 0; idx < exectb.size(); idx++){ // Loop for executable building
 
         // Vars for executable building
@@ -357,8 +354,9 @@ void DoBuild() { // Finishes Build
         CompileAll(CurrentTarget, CompCmd, Objs);
 
         // Append -o flags and add in Object filenames
-        LinkCmd.append(Join(Objs, " "));
-        LinkCmd.append(" -o " + CurrentTarget.name + " ");
+        LinkCmd.append(" " + Join(Objs, " ") + " ");
+        if (!IsMSVC) LinkCmd.append(" -o out/" + CurrentTarget.name + " ");
+        else LinkCmd.append(" /Fe:out/" + CurrentTarget.name);
         InsertCMD(LinkCmd);
         if (Windows) LinkCmd.append(".exe "); // If we're on windows, make it a .exe
         // Insert Linker Commands
@@ -382,13 +380,13 @@ void DoBuild() { // Finishes Build
         if (Apple){ // For macOS, Compilation of a Dynamic Library needs `-fPIC`
                     // For macOS, Linking of a Dynamic Library need 
                     //      `-dynamiclib` and is Prefix with `lib` and File Extension is `.dylib`
-            LinkCmd.append(" -dynamiclib  -o lib" + CurrentTarget.name + ".dylib ");
+            LinkCmd.append(" -dynamiclib  -o out/lib" + CurrentTarget.name + ".dylib ");
             CompCmd.append(" -fPIC ");
         }
         if (Linux){ // For Linux, Compilation of a Shared Object needs `-fPIC`
                     // For Linux, Linking of a Dynamic Library need 
                     //      `-shared` and is Prefix with `lib` and File Extension is `.so`
-            LinkCmd.append(" -shared -o lib" + CurrentTarget.name + ".so ");
+            LinkCmd.append(" -shared -o out/lib" + CurrentTarget.name + ".so ");
             CompCmd.append(" -fPIC ");
         }
         if (Windows){ // For Windows, Linking of a Dynamic Link Library needs `-shared` on things like Cygwin & MinGW
@@ -399,9 +397,9 @@ void DoBuild() { // Finishes Build
                       //                Import Library with prefix `lib` and use the File Extension `.dll.a`, unless on MSVC then we use
                       //                        File Extension `.lib` and no prefix
             if (!IsMSVC){
-                LinkCmd.append(" -shared -o " + CurrentTarget.name + ".dll -Wl,--out-implib,lib " + CurrentTarget.name + ".dll.a");
+                LinkCmd.append(" -shared -o " + CurrentTarget.name + ".dll -Wl,--out-implib,lib" + CurrentTarget.name + ".dll.a ");
             } else {
-                LinkCmd.append(" /LD /Fe:" + CurrentTarget.name + ".dll");
+                LinkCmd.append(" /LD /Fe:out/" + CurrentTarget.name + ".dll ");
             }
         }
 
@@ -409,7 +407,7 @@ void DoBuild() { // Finishes Build
         CompileAll(CurrentTarget, CompCmd, Objs);
 
         // Append Object filenames to link command
-        LinkCmd.append(Join(Objs, " "));
+        LinkCmd.append(" " + Join(Objs, " ") + " ");
         // Insert Linker
         InsertCMD(LinkCmd);
         // Execute cleaned final linking command
@@ -428,8 +426,8 @@ void DoBuild() { // Finishes Build
         std::string CompCmd;
         std::vector<std::string> Objs;
         std::string LinkCmd;
-        if (!IsMSVC) LinkCmd = "ar rcs lib" + CurrentTarget.name + ".a ";
-        else LinkCmd = "lib /OUT:" + CurrentTarget.name + ".lib ";
+        if (!IsMSVC) LinkCmd = "ar rcs out/lib" + CurrentTarget.name + ".a ";
+        else LinkCmd = "lib /OUT:out/" + CurrentTarget.name + ".lib ";
 
         // Add in compile options
         CompCmd.append(Join(compileopts, " "));
@@ -438,7 +436,7 @@ void DoBuild() { // Finishes Build
         CompileAll(CurrentTarget, CompCmd, Objs);
 
         // Append Object filenames to link command
-        LinkCmd.append(Join(Objs, " "));
+        LinkCmd.append(" " + Join(Objs, " ") + " ");
 
         // Execute cleaned link command
         std::cout << "LINK STATIC LIB: " << CurrentTarget.name << std::endl;
