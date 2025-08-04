@@ -1,4 +1,11 @@
 #include "../ObjBuild.hpp"
+
+/*
+=== PLEASE NOTE ===
+Currently your source files MUST be in a subdirectory
+don't blame me (although im working on a fix) blame std::filesystem
+*/
+
 B_MakeBuild // Init ObjBuild
 B_ProjectType("C"); // Set project type to C
 
