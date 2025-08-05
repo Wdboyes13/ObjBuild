@@ -11,7 +11,8 @@ Full License can be found at THE END of this file
 #include <iostream> // std::cerr, std::cout, std::endl
 #include <string> // std::string
 #include <sstream> // std::istringstream
-#include <filesystem> // std::filesystem::create_directory, std::filesystem::create_directories, std::filesystem::path
+#include <filesystem> // std::filesystem::create_directory, std::filesystem::create_directories, std::filesystem::path,
+                      // std::filesystem::remove_all
 
 // C Headers
 #include <cstdlib> // exit, getenv, size_t, system
