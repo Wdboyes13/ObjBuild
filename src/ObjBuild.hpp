@@ -4,7 +4,7 @@ Copyright (c) 2025 Wdboyes13
 Full License can be found at THE END of this file
 */
 
-#pragma once
+#ifndef OBJBUILD_HPP
 
 // C++ Headers
 #include <vector> // std::vector
@@ -485,6 +485,8 @@ void DoBuild() { // Finishes Build
         system(StripBadChars(LinkCmd).c_str());
     }
 }};
+
+#endif
 
 /*
 Copyright (c) 2025 Wdboyes13  
