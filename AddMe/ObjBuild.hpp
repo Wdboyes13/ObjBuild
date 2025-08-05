@@ -6,20 +6,29 @@ Full License can be found at THE END of this file
 
 #pragma once
 
+// C++ Headers
 #include <vector> // std::vector
 #include <iostream> // std::cerr, std::cout, std::endl
 #include <string> // std::string
 #include <sstream> // std::istringstream
-#include <cstdlib> // exit, getenv, size_t, system
-#include <cctype> // isprint
 #include <filesystem> // std::filesystem::create_directory, std::filesystem::create_directories, std::filesystem::path
+
+// C Headers
+#include <cstdlib> // exit, getenv, size_t, system
+#include <cstring> // strcmp
+#include <cctype> // isprint
+
+// Platform Headers
 #ifdef _WIN32 
 #include <windows.h> // SetCurrentDirectory
 #else 
 #include <unistd.h> // chdir
 #endif
 
-// PUB API START
+// These are the macros to make using ObjBuild a lot cleaner
+//      It includes automatically initializing classes +
+//      Easily accesing the instance +
+//      The `int main(int argc, char* argv[])` function
 
 #define B_MakeBuild \
     int main(int argc, char* argv[]) { \
@@ -47,8 +56,7 @@ Full License can be found at THE END of this file
 #define B_Linux ObjB->Linux// Platform Linux
 #define B_IsMSVC ObjB->IsMSVC
 
-// PUB API END
-
+// Start of actual code
 
 class ObjBuild {
 typedef struct Target { // Target type, does NOT contain compilation info
@@ -155,7 +163,7 @@ private:
             } else {
                 Filename.insert(0, "../");
             }
-            if (!oname.parent_path().empty()){
+            if (!oname.parent_path().empty()){ // Create parent directories
                 std::filesystem::create_directories(oname.parent_path());
             }
 
@@ -247,7 +255,14 @@ bool IsMSVC = false;
         HasHead = true;
 }
 
-ObjBuild(int argc, char *argv[]) {
+ObjBuild(int argc, char *argv[]) { // Initializer
+    if (argc <= 2) {
+        if (strcmp(argv[1], "--clean") == 0){
+            std::cout << "Cleaning" << std::endl;
+            std::filesystem::remove_all("OBuild");
+            exit(0);
+        }
+    }
     std::cout << "Initializing ObjBuild" << std::endl;
 
     this->CreateBuild();
