@@ -4,14 +4,15 @@ Copyright (c) 2025 Wdboyes13
 Full License can be found at THE END of this file
 */
 
-#pragma once
+#ifndef OBJBUILD_HPP
 
 // C++ Headers
 #include <vector> // std::vector
 #include <iostream> // std::cerr, std::cout, std::endl
 #include <string> // std::string
 #include <sstream> // std::istringstream
-#include <filesystem> // std::filesystem::create_directory, std::filesystem::create_directories, std::filesystem::path
+#include <filesystem> // std::filesystem::create_directory, std::filesystem::create_directories, std::filesystem::path,
+                      // std::filesystem::remove_all
 
 // C Headers
 #include <cstdlib> // exit, getenv, size_t, system
@@ -25,10 +26,11 @@ Full License can be found at THE END of this file
 #include <unistd.h> // chdir
 #endif
 
-// These are the macros to make using ObjBuild a lot cleaner
-//      It includes automatically initializing classes +
-//      Easily accesing the instance +
-//      The `int main(int argc, char* argv[])` function
+/* These are the macros to make using ObjBuild a lot cleaner
+        It includes automatically initializing classes +
+        Easily accesing the instance +
+        The `int main(int argc, char* argv[])` function 
+*/
 
 #define B_MakeBuild \
     int main(int argc, char* argv[]) { \
@@ -229,20 +231,22 @@ bool IsMSVC = false;
         CC.append(" ");
         CXX.append(" ");
 
-        // If LDFLAGS then 
-        //      1. Strip any bad chars 
-        //      2. Split By Space
-        //      3. Append to `linkopts` std::vector
+        /* If LDFLAGS then 
+                1. Strip any bad chars 
+                2. Split By Space
+                3. Append to `linkopts` std::vector 
+        */
         if (ldEnv) {
             auto cleanLdEnv = StripBadChars(ldEnv);
             auto ldextra = SplitBySpace(cleanLdEnv);
             linkopts.insert(linkopts.end(), ldextra.begin(), ldextra.end());
         }
 
-        // If CFLAGS / CPPFLAGS then 
-        //      1. Strip any bad chars 
-        //      2. Split By Space
-        //      3. Append to `compileopts` std::vector
+        /* If CFLAGS / CPPFLAGS then 
+                1. Strip any bad chars 
+                2. Split By Space
+                3. Append to `compileopts` std::vector
+        */
         if (!cEnv.empty()) {
             auto cleanCEnv = StripBadChars(cEnv);
             auto cextra = SplitBySpace(cleanCEnv);
@@ -412,25 +416,28 @@ void DoBuild() { // Finishes Build
         // Add in and `compileopts` to the right std::string
         CompCmd.append(Join(compileopts, " "));
 
-        if (Apple){ // For macOS, Compilation of a Dynamic Library needs `-fPIC`
-                    // For macOS, Linking of a Dynamic Library need 
-                    //      `-dynamiclib` and is Prefix with `lib` and File Extension is `.dylib`
+        if (Apple){ /*  For macOS, Compilation of a Dynamic Library needs `-fPIC`
+                        For macOS, Linking of a Dynamic Library need 
+                            `-dynamiclib` and is Prefix with `lib` and File Extension is `.dylib`
+                    */
             LinkCmd.append(" -dynamiclib  -o out/lib" + CurrentTarget.name + ".dylib ");
             CompCmd.append(" -fPIC ");
         }
-        if (Linux){ // For Linux, Compilation of a Shared Object needs `-fPIC`
-                    // For Linux, Linking of a Dynamic Library need 
-                    //      `-shared` and is Prefix with `lib` and File Extension is `.so`
+        if (Linux){ /* For Linux, Compilation of a Shared Object needs `-fPIC`
+                       For Linux, Linking of a Dynamic Library need 
+                            `-shared` and is Prefix with `lib` and File Extension is `.so`
+                    */
             LinkCmd.append(" -shared -o out/lib" + CurrentTarget.name + ".so ");
             CompCmd.append(" -fPIC ");
         }
-        if (Windows){ // For Windows, Linking of a Dynamic Link Library needs `-shared` on things like Cygwin & MinGW
-                      //        Output is file extension is `.dll`
-                      //        Microsoft's Dynamic Link Libraries consist of an 
-                      //                Export Lib (.dll) and Import Lib (.a / .lib)
-                      //        To get an import library, we use the linker flag `--out-implib` and we prefix the
-                      //                Import Library with prefix `lib` and use the File Extension `.dll.a`, unless on MSVC then we use
-                      //                        File Extension `.lib` and no prefix
+        if (Windows){ /* For Windows, Linking of a Dynamic Link Library needs `-shared` on things like Cygwin & MinGW
+                                Output is file extension is `.dll`
+                                Microsoft's Dynamic Link Libraries consist of an 
+                                        Export Lib (.dll) and Import Lib (.a / .lib)
+                                To get an import library, we use the linker flag `--out-implib` and we prefix the
+                                        Import Library with prefix `lib` and use the File Extension `.dll.a`, unless on MSVC then we use
+                                                File Extension `.lib` and no prefix
+                      */
             if (!IsMSVC){
                 LinkCmd.append(" -shared -o " + CurrentTarget.name + ".dll -Wl,--out-implib,lib" + CurrentTarget.name + ".dll.a ");
             } else {
@@ -478,6 +485,8 @@ void DoBuild() { // Finishes Build
         system(StripBadChars(LinkCmd).c_str());
     }
 }};
+
+#endif
 
 /*
 Copyright (c) 2025 Wdboyes13  

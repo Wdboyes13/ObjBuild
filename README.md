@@ -15,6 +15,7 @@ Then copy everything in AddToREADME.md into your README.md
 ## Note 
 This system is NOT recommended for larger projects  
 For large projects, CMake is recommended  
+It's not recommended, since i'm terrible at design. I know I should really sit down and work on tool design a lot more.  
 
 I got the idea from [Mate.h](https://github.com/TomasBorquez/mate.h)  
 
