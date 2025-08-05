@@ -23,8 +23,7 @@ Full License can be found at THE END of this file
 
 #define B_MakeBuild \
     int main(int argc, char* argv[]) { \
-    std::unique_ptr<ObjBuild> ObjB = std::make_unique<ObjBuild>(); \
-    ObjB->CreateBuild();
+    std::unique_ptr<ObjBuild> ObjB = std::make_unique<ObjBuild>(argc, argv);
 
 #define B_DoBuild ObjB->DoBuild(); }
 #define B_AddDepLib ObjB->AddDepLib
@@ -156,8 +155,9 @@ private:
             } else {
                 Filename.insert(0, "../");
             }
-
-            std::filesystem::create_directories(oname.parent_path());
+            if (!oname.parent_path().empty()){
+                std::filesystem::create_directories(oname.parent_path());
+            }
 
             // Add filename, output name, and append output name to Objs to link
             if (!IsMSVC){
@@ -245,6 +245,26 @@ bool IsMSVC = false;
         SetPlatform();
         // Set that this function ran succesfully
         HasHead = true;
+}
+
+ObjBuild(int argc, char *argv[]) {
+    std::cout << "Initializing ObjBuild" << std::endl;
+
+    this->CreateBuild();
+
+    std::cout << "Detected C Compiler " << CC << std::endl;
+    std::cout << "Detected C++ Compiler " << CXX << std::endl;
+    if (Windows) {
+        std::cout << "Detected OS Windows" << std::endl;
+    }
+    else if (Apple) {
+         std::cout << "Detected OS macOS" << std::endl;
+    }
+    else if (Linux) {
+         std::cout << "Detected OS Linux" << std::endl;
+    }
+
+    std::cout << "Your configuration will now be processed" << std::endl;
 }
 
  void ProjectType(std::string Type){ // Set Project Type

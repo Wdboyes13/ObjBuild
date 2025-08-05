@@ -155,8 +155,9 @@ private:
             } else {
                 Filename.insert(0, "../");
             }
-
-            std::filesystem::create_directories(oname.parent_path());
+            if (!oname.parent_path().empty()){
+                std::filesystem::create_directories(oname.parent_path());
+            }
 
             // Add filename, output name, and append output name to Objs to link
             if (!IsMSVC){
